@@ -1,8 +1,19 @@
 package dev.limhm.dateAndTime;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.Month;
+import java.time.Period;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.TimeZone;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -62,6 +73,97 @@ class DateAndTimeTest {
       // (정의된 ENUM만 받게 하던지 해야 한다.)
       Calendar birth = new GregorianCalendar(1987, 1, 28);
       System.out.println(birth.getTime());
+    }
+  }
+
+  @Nested
+  @DisplayName("API")
+  class ApiTest {
+
+    @Test
+    @DisplayName("기계 시간 (실행시간 측정 시 사용)")
+    void case1() {
+      Instant instant = Instant.now();
+      // GMT == UTC
+      System.out.println(instant);
+      System.out.println(instant.atZone(ZoneId.of("UTC")));
+
+      ZoneId zoneId = ZoneId.systemDefault();
+      System.out.println(zoneId);
+      ZonedDateTime zonedDateTime = instant.atZone(zoneId);
+      System.out.println(zonedDateTime);
+    }
+
+    @Test
+    @DisplayName("인간 시간")
+    void case2() {
+      LocalDateTime now = LocalDateTime.now();
+      System.out.println(now);
+
+      LocalDateTime birthDay = LocalDateTime.of(1987, Month.JANUARY, 28, 4, 20, 0);
+      System.out.println(birthDay);
+
+      ZonedDateTime nowInKorea = ZonedDateTime.now(ZoneId.of("Asia/Seoul"));
+      System.out.println(nowInKorea);
+
+      // Instant와 LocalDatTime은 호환이 가능
+      Instant nowInstant = Instant.now();
+      ZonedDateTime zonedDateTime = nowInstant.atZone(ZoneId.of("Asia/Seoul"));
+      System.out.println(zonedDateTime);
+    }
+
+    @Test
+    @DisplayName("기간 표현 - Period (인간용)")
+    void case3() {
+      LocalDate today = LocalDate.now();
+      LocalDate birthDay = LocalDate.of(today.getYear() + 1, Month.DECEMBER, 28);
+
+      Period period = Period.between(today, birthDay);
+      System.out.println(period.getDays());
+
+      // 위와 동일한 기능
+      Period until = today.until(birthDay);
+      System.out.println(until.get(ChronoUnit.DAYS));
+    }
+
+    @Test
+    @DisplayName("기간 표현 - Duration (기계용)")
+    void case4() {
+      Instant now = Instant.now();
+      Instant plus = Instant.now().plus(10, ChronoUnit.SECONDS);
+      Duration between = Duration.between(now, plus);
+      System.out.println(between.getSeconds());
+    }
+
+    @Test
+    @DisplayName("포매팅")
+    void case5() {
+      LocalDateTime now = LocalDateTime.now();
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+      System.out.println(now.format(formatter));
+    }
+
+    @Test
+    @DisplayName("파싱")
+    void case6() {
+      DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+      LocalDate parse = LocalDate.parse("01/28/1987", formatter);
+      System.out.println(parse);
+    }
+
+    @Test
+    @DisplayName("레거시 API 지원")
+    void case7() {
+      Date date = new Date();
+      Instant instant = date.toInstant();
+      Date newDate = Date.from(instant);
+
+      GregorianCalendar gregorianCalendar = new GregorianCalendar();
+      ZonedDateTime dateTime = gregorianCalendar.toInstant().atZone(ZoneId.systemDefault());
+      GregorianCalendar from = GregorianCalendar.from(dateTime);
+
+      ZoneId zoneId = TimeZone.getTimeZone("PST").toZoneId();
+      TimeZone timeZone = TimeZone.getTimeZone(zoneId);
     }
   }
 }
