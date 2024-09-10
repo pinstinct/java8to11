@@ -110,6 +110,7 @@ public class CallableAndFutureTest {
   @Test
   @DisplayName("invokeAny() - 여러 작업 동시에 실행 후 응답이 하나라도 오면 끝내기")
   void case5() throws ExecutionException, InterruptedException {
+    // 예를 들아, 여러 서버에서 동일한 요청을 보내 가장 빠른 응답만 받아 처리하는 경우
     ExecutorService service = Executors.newFixedThreadPool(4);
 
     Callable<String> hello = () -> {
